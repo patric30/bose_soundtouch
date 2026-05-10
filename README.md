@@ -57,7 +57,7 @@ Um den ESP32 für den dauerhaften Betrieb vorzubereiten, flashen wir das `.ino`-
 ### Schritt 1: Die Arduino IDE vorbereiten
 1. Lade dir die kostenlose **Arduino IDE** (arduino.cc) herunter und installiere sie.
 2. Öffne die IDE und gehe in die Einstellungen (Preferences).
-3. Trage unter "Additional Boards Manager URLs" folgende URL ein: `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
+3. Trage unter "Additional Boards Manager URLs" folgende URL ein: `https://espressif.github.io/arduino-esp32/package_esp32_index.json`
 4. Gehe zu **Tools -> Board -> Boards Manager**, suche nach `esp32` und installiere das Paket von Espressif Systems.
 
 ### Schritt 2: Das Skript anpassen
