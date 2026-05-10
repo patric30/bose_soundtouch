@@ -42,52 +42,43 @@ python3 bose_watchdog.py
 
 Drücke anschließend die entsprechende Hardware-Taste (z. B. Taste 3) am Lautsprecher, um den Stream auszulösen.
 
-## ESP32 Installation (Dauerhafter Betrieb)
+## Lokales Testen vs. Dauerhafter Betrieb
 
-Der mit weitem Abstand einfachste Weg, MicroPython und das Watchdog-Skript auf einen ESP32 zu bekommen, ist die kostenlose Software Thonny. Sie ist eine Art "Rundum-sorglos-Paket" für Mikrocontroller.
+Das Projekt besteht aus zwei Varianten:
 
-Hier ist die Schritt-für-Schritt-Anleitung für deinen Mac:
+1. **`bose_watchdog.py` (Lokales Testen):** Dieses Python-Skript ist ideal, um die Verbindung zum Bose-Lautsprecher schnell über den Mac (oder PC) zu testen, die richtige IP-Adresse auszuprobieren und den Stream zu verifizieren.
+2. **`esp32_watchdog/esp32_watchdog.ino` (Dauerhafter Betrieb):** Für den dauerhaften Einsatz am Lautsprecher verwenden wir einen ESP32 Mikrocontroller mit C++. 
+   *Warum C++ und kein MicroPython?* C++ bietet auf Mikrocontrollern eine extrem stabile Laufzeit ohne Unterbrechungen durch "Garbage Collection" (Speicherbereinigung), wie es bei Python der Fall ist. So wird garantiert, dass der Watchdog über Monate hinweg reibungslos und ressourcenschonend im Hintergrund läuft.
 
-### Schritt 1: Die Hardware-Falle umgehen
-Bevor wir zur Software kommen, hier der häufigste Fehler:
-Da moderne Macs (wie der iMac) oft nur USB-C Ports haben, brauchst du ein passendes Kabel (USB-C auf Micro-USB oder USB-C auf USB-C, je nach ESP32).
-**Achtung:** Nutze zwingend ein **Datenkabel**! Viele billige Kabel (z. B. von E-Zigaretten oder billigen Kopfhörern) sind reine Ladekabel. Wenn der ESP32 am Mac nicht erkannt wird, ist zu 100 % das Kabel schuld.
+## ESP32 Installation (C++ / Arduino IDE)
 
-### Schritt 2: Thonny installieren
-1. Lade dir die Software Thonny herunter (die Website heißt `thonny.org` – wähle dort den Download für macOS).
-2. Öffne die `.pkg`- oder `.dmg`-Datei und installiere das Programm wie gewohnt auf deinem Mac.
+Um den ESP32 für den dauerhaften Betrieb vorzubereiten, flashen wir das `.ino`-Skript über die Arduino IDE.
 
-### Schritt 3: MicroPython auf den ESP32 flashen (Das Betriebssystem)
-Dein ESP32 ist aktuell wahrscheinlich noch "leer" oder hat eine andere Software drauf. Wir müssen ihm erst beibringen, Python zu verstehen. Das macht Thonny fast von allein:
+### Schritt 1: Die Arduino IDE vorbereiten
+1. Lade dir die kostenlose **Arduino IDE** (arduino.cc) herunter und installiere sie.
+2. Öffne die IDE und gehe in die Einstellungen (Preferences).
+3. Trage unter "Additional Boards Manager URLs" folgende URL ein: `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
+4. Gehe zu **Tools -> Board -> Boards Manager**, suche nach `esp32` und installiere das Paket von Espressif Systems.
 
-1. Schließe den ESP32 an deinen Mac an.
-2. Öffne Thonny.
-3. Klicke oben in der Menüleiste deines Mac auf **Run (oder Ausführen)** und dann auf **Configure interpreter... (Interpreter konfigurieren)**.
-4. Wähle im Dropdown-Menü ganz oben **MicroPython (ESP32)** aus.
-5. Darunter bei "Port" klickst du auf das Dropdown-Menü. Hier sollte jetzt etwas auftauchen, das ungefähr so heißt wie `/dev/cu.usbserial-0001` oder `/dev/cu.wchusbserial...`. Wähle das aus. (Taucht hier nichts auf, hast du ein reines Ladekabel erwischt).
-6. Der magische Knopf: Klicke unten rechts in diesem Fenster auf **Install or update MicroPython**.
-7. Ein neues Fenster öffnet sich. Wähle dort deinen Port aus, lass die ESP32-Familie auf Standard ("ESP32") und klicke auf **Install**.
+### Schritt 2: Das Skript anpassen
+1. Öffne die Datei `esp32_watchdog/esp32_watchdog.ino` in der Arduino IDE.
+2. Trage im oberen Bereich des Codes deine echten WLAN-Zugangsdaten ein:
+   ```cpp
+   const char* ssid = "DEIN_WLAN_NAME";
+   const char* password = "DEIN_WLAN_PASSWORT";
+   ```
+3. Stelle sicher, dass die `bose_ip` mit der deines Lautsprechers übereinstimmt.
 
-*Pro-Tipp:* Wenn Thonny beim Installieren bei dem Text "Connecting..." hängen bleibt, halte auf deinem ESP32-Board für 2-3 Sekunden den kleinen Knopf mit der Aufschrift "BOOT" gedrückt. Das zwingt den Chip in den Flash-Modus.
+### Schritt 3: Flashen
+1. Schließe den ESP32 mit einem **Datenkabel** (Achtung: keine reinen Ladekabel verwenden!) an deinen Mac/PC an.
+2. Wähle in der Arduino IDE unter **Tools -> Board** deinen ESP32 aus (meistens "ESP32 Dev Module").
+3. Wähle unter **Tools -> Port** den passenden USB-Port aus (z.B. `/dev/cu.usbserial...`).
+4. Klicke oben links auf den Pfeil **Upload** (Hochladen).
 
-### Schritt 4: Das Skript (`main.py`) aufspielen
-Sobald Thonny "Done" anzeigt, schließt du das Installationsfenster. Der ESP32 spricht jetzt Python!
+*Pro-Tipp:* Wenn die IDE beim Text "Connecting..." hängen bleibt, halte auf deinem ESP32-Board für 2-3 Sekunden den kleinen Knopf mit der Aufschrift "BOOT" gedrückt.
 
-1. Kopiere den Code aus der Datei `esp32_watchdog/main.py`.
-2. Füge ihn in das große, leere Textfeld in Thonny ein.
-3. Trage oben im Code deine WLAN-Daten (`SSID` und `PASSWORD`) ein.
-4. Klicke oben in Thonny auf das Speichern-Symbol (die Diskette) oder drücke `Cmd + S`.
-5. Thonny fragt dich jetzt etwas sehr Wichtiges: "Where to save to?" (Wo soll gespeichert werden?). Klicke auf **MicroPython device (MicroPython Gerät)**.
-6. Benenne die Datei exakt **`main.py`** und drücke auf OK.
+### Schritt 4: Der erste Test
+Sobald der Upload abgeschlossen ist, öffne in der Arduino IDE den **Serial Monitor** (Lupe oben rechts) und stelle die Baudrate unten rechts auf `115200`.
+Dort solltest du sehen, wie sich der ESP32 mit dem WLAN verbindet und in den Überwachungsmodus wechselt. 
 
-### Schritt 5: Der erste Test
-Wenn die Datei auf dem Gerät gespeichert ist, drückst du auf dem ESP32 einmal den kleinen "EN"-Knopf (Reset) oder klickst in Thonny auf den grünen "Play"-Pfeil.
-
-Unten im Thonny-Fenster (in der "Shell") siehst du nun live, was der ESP32 macht. Dort sollte dann stehen:
-```text
-Verbinde mit WLAN...
-WLAN verbunden! IP: 192.168.178.xxx
-ESP32 Watchdog gestartet. Überwache Taste 3...
-```
-
-Das war's! Sobald das in der Shell steht, kannst du den ESP32 vom Mac abziehen, ihn ins Bad an den USB-Port des Bose stecken und dein Projekt ist abgeschlossen. Du hast den Lautsprecher offiziell gerettet!
+Danach kannst du den ESP32 vom Computer abziehen, mit einem simplen USB-Netzteil in die Steckdose (oder direkt in den USB-Service-Port des Bose) stecken, und dein Radio läuft wieder völlig autark!
