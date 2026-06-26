@@ -85,6 +85,13 @@ void play_stream_via_dlna() {
 }
 
 void loop() {
+  // Daily reboot to prevent heap fragmentation (86400000 ms = 24 hours)
+  if (millis() > 86400000) {
+    Serial.println("\n--> Periodic reboot to clean heap memory...");
+    delay(500);
+    ESP.restart();
+  }
+
   // Nur abfragen, wenn das WLAN noch steht
   if(WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
